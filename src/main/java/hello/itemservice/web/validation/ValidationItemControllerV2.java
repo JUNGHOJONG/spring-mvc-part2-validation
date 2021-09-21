@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -43,15 +46,12 @@ public class ValidationItemControllerV2 {
     }
 
     @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
+    public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        log.info("item={}", item);
+        validateFieldAndGlobalLogic(item, bindingResult);
 
-        Map<String, String> errors = new HashMap<>();
-
-        validateFieldAndGlobalLogic(item, errors);
-
-        if (!errors.isEmpty()) {
-            log.info("errors={}", errors);
-            model.addAttribute("errors", errors);
+        if (bindingResult.hasErrors()) {
+            log.info("bindingResult={}", bindingResult);
             return "/validation/v2/addForm";
         }
 
@@ -61,27 +61,27 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    private void validateFieldAndGlobalLogic(Item item, Map<String, String> errors) {
+    private void validateFieldAndGlobalLogic(Item item, BindingResult bindingResult) {
         // 필드 검증
         if (!StringUtils.hasText(item.getItemName())) {
-            errors.put("itemName", "상품명은 공백이 허용되지 않습니다.");
+            bindingResult.addError(new FieldError("item", "itemName", "상품명은 공백이 허용되지 않습니다."));
         }
 
         Integer price = item.getPrice();
 
-        if (price != null && (price < 1000 || price > 1000000)) {
-            errors.put("price", "가격은 1000원 이상 1백만원 이하만 허용합니다.");
+        if (price == null || (price < 1000 || price > 1000000)) {
+            bindingResult.addError(new FieldError("item", "price", "가격은 1000원 이상 1백만원 이하만 허용합니다."));
         }
 
         Integer quantity = item.getQuantity();
 
-        if (quantity != null && quantity > 9999) {
-            errors.put("quantity", "수량은 최대 9999까지만 허용합니다.");
+        if (quantity == null || quantity > 9999) {
+            bindingResult.addError(new FieldError("item", "quantity", "수량은 최대 9999까지만 허용합니다."));
         }
 
         // 글로벌 검증
         if (price != null && quantity != null && price * quantity < 10000) {
-            errors.put("globalError", "가격 * 수량의 합은 10,000원 이상이어야 합니다.");
+            bindingResult.addError(new ObjectError("item", "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + (price * quantity)));
         }
     }
 
@@ -93,15 +93,12 @@ public class ValidationItemControllerV2 {
     }
 
     @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @ModelAttribute Item item, Model model) {
+    public String edit(@PathVariable Long itemId, @ModelAttribute Item item, BindingResult bindingResult, Model model) {
 
-        Map<String, String> errors = new HashMap<>();
+        validateFieldAndGlobalLogic(item, bindingResult);
 
-        validateFieldAndGlobalLogic(item, errors);
-
-        if (!errors.isEmpty()) {
-            log.info("errors={}", errors);
-            model.addAttribute("errors", errors);
+        if (bindingResult.hasErrors()) {
+            log.info("bindingResult={}", bindingResult);
             return "/validation/v2/editForm";
         }
 
