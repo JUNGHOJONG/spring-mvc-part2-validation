@@ -64,24 +64,28 @@ public class ValidationItemControllerV2 {
     private void validateFieldAndGlobalLogic(Item item, BindingResult bindingResult) {
         // 필드 검증
         if (!StringUtils.hasText(item.getItemName())) {
-            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, null, null, "상품명은 공백이 허용되지 않습니다."));
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false,
+                    new String[]{"required.item.itemName"}, null, "상품명은 공백이 허용되지 않습니다."));
         }
 
         Integer price = item.getPrice();
 
         if (price == null || (price < 1000 || price > 1000000)) {
-            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1000원 이상 1백만원 이하만 허용합니다."));
+            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false,
+                    new String[]{"range.item.price"}, new Object[]{1000, 1000000}, "가격은 1000원 이상 1백만원 이하만 허용합니다."));
         }
 
         Integer quantity = item.getQuantity();
 
         if (quantity == null || quantity > 9999) {
-            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, null, null, "수량은 최대 9999까지만 허용합니다."));
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false,
+                    new String[]{"max.item.quantity"}, new Object[]{9999}, "수량은 최대 9999까지만 허용합니다."));
         }
 
         // 글로벌 검증
         if (price != null && quantity != null && price * quantity < 10000) {
-            bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + (price * quantity)));
+            bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"},
+                    new Object[]{10000, (price * quantity)}, "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + (price * quantity)));
         }
     }
 
