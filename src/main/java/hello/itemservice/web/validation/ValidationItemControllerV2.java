@@ -24,6 +24,7 @@ import java.util.Map;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
 
     @GetMapping
     public String items(Model model) {
@@ -45,10 +46,31 @@ public class ValidationItemControllerV2 {
         return "validation/v2/addForm";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         log.info("item={}", item);
         validateFieldAndGlobalLogic2(item, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            log.info("bindingResult={}", bindingResult);
+            return "/validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    /**
+     * ItemValidator 클래스로 검증을 담당하는 부분을 분리한다.
+     */
+    @PostMapping("/add")
+    public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+
+        if (itemValidator.supports(item.getClass())) {
+            itemValidator.validate(item, bindingResult);
+        }
 
         if (bindingResult.hasErrors()) {
             log.info("bindingResult={}", bindingResult);
