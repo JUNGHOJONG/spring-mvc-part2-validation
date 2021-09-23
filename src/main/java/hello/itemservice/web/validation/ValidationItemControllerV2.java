@@ -89,6 +89,33 @@ public class ValidationItemControllerV2 {
         }
     }
 
+    /**
+     * 오류 코드와 메시지 처리2(개선)
+     */
+    private void validateFieldAndGlobalLogic2(Item item, BindingResult bindingResult) {
+        // 필드 검증
+        if (!StringUtils.hasText(item.getItemName())) {
+            bindingResult.rejectValue("itemName", "required");
+        }
+
+        Integer price = item.getPrice();
+
+        if (price == null || (price < 1000 || price > 1000000)) {
+            bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
+        }
+
+        Integer quantity = item.getQuantity();
+
+        if (quantity == null || quantity > 9999) {
+            bindingResult.rejectValue("quantity", "max", new Object[]{9999}, null);
+        }
+
+        // 글로벌 검증
+        if (price != null && quantity != null && price * quantity < 10000) {
+            bindingResult.reject("totalPriceMin", new Object[]{10000, (price * quantity)}, null);
+        }
+    }
+
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
