@@ -48,7 +48,7 @@ public class ValidationItemControllerV2 {
     @PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         log.info("item={}", item);
-        validateFieldAndGlobalLogic(item, bindingResult);
+        validateFieldAndGlobalLogic2(item, bindingResult);
 
         if (bindingResult.hasErrors()) {
             log.info("bindingResult={}", bindingResult);
