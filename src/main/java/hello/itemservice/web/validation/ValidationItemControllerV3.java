@@ -78,6 +78,14 @@ public class ValidationItemControllerV3 {
     @PostMapping("/{itemId}/edit")
     public String editItem(@PathVariable Long itemId, @Validated @ModelAttribute Item item, BindingResult bindingResult, Model model) {
 
+        //글로벌 오류 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+            }
+        }
+
         if (bindingResult.hasErrors()) {
             log.info("bindingResult={}", bindingResult);
             return "/validation/v3/editForm";
