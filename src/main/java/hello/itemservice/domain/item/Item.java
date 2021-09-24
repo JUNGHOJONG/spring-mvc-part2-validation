@@ -2,11 +2,16 @@ package hello.itemservice.domain.item;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+/**
+ * @ScriptAssert 는 검증 기능이 해당 객체의 범위에만 제한이 되어 실무에서는 잘 사용되지 않는다.(제약이 많고 복잡)
+ */
+//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000")
 @Data
 public class Item {
 
