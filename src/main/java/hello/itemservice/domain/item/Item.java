@@ -1,32 +1,13 @@
 package hello.itemservice.domain.item;
 
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
-import org.hibernate.validator.constraints.ScriptAssert;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-/**
- * @ScriptAssert 는 검증 기능이 해당 객체의 범위에만 제한이 되어 실무에서는 잘 사용되지 않는다.(제약이 많고 복잡)
- */
-//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000")
 @Data
 public class Item {
 
-    @NotNull(groups = UpdateCheck.class)
     private Long id;
-
-    @NotBlank(groups = {SaveCheck.class, UpdateCheck.class}, message = "공백! {0}")
     private String itemName;
-
-    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
-    @Range(groups = {SaveCheck.class, UpdateCheck.class}, min = 1000, max = 1000000)
     private Integer price;
-
-    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
-    @Max(groups = SaveCheck.class, value = 9999)
     private Integer quantity;
 
     public Item() {
